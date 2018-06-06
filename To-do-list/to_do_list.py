@@ -1,5 +1,5 @@
 import json
-import re
+import datetime
 
 class tasks:
     tasks = []
@@ -69,11 +69,36 @@ def menu(to_do_list):
             val = input('Incorrect Choice! Enter again: ')
 
         if val == 1:
+
+            #input message
             message = input('Message: ')
-            date   = input('Due date: ')
+            print('')
+            correct_date = False
+
+            #input date
+            while not correct_date:
+                try:
+                    date   = input('Due date(DD-MM-YYYY): ')
+                    day, month,year = date.split('-')
+                    date = datetime.date(year, month, day)
+                    correct_date = True
+                except Exception as e:
+                    print(f'{e}! PLease try again!')
+            print('')
+
+            #input priority
             urg = int(input('How urgent is this task(1-10): '))
+            while urg not in range(1,10+1):
+                print('Out of bounds! Try Again')
+                urg = int(input('How urgent is this task(1-10): '))
+
             imp = int(input('How important is this task(1-10): '))
+            while imp not in range(1,10+1):
+                print('Out of bounds! Try Again')
+                imp = int(input('How important is this task(1-10): '))
             urg_imp = round(urg/imp,2)
+            print(' ')
+            #add task to to do list
             to_do_list.add(message,date,urg_imp)
 
         if val == 2:
@@ -96,7 +121,18 @@ def menu(to_do_list):
                 plist = to_do_list.keyword_search(keyword)
 
             if sval == 3:
-                date = input('Enter date to be searched: ')
+                #input date
+                correct_date = False
+                while not correct_date:
+                    try:
+                        date   = input('Due date(DD-MM-YYYY): ')
+                        day, month,year = date.split('-')
+                        date = datetime.date(year, month, day)
+                        correct_date = True
+                    except Exception as e:
+                        print(f'{e}! PLease try again!')
+                print('')
+
                 plist = to_do_list.search(key='date',value=date)
 
             print('\n---> Search Results:\n')
