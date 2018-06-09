@@ -72,19 +72,17 @@ def menu(to_do_list):
 
             #input message
             message = input('Message: ')
-            print('')
             correct_date = False
 
             #input date
             while not correct_date:
                 try:
-                    date   = input('Due date(DD-MM-YYYY): ')
-                    day, month,year = date.split('-')
-                    date = datetime.date(year, month, day)
+                    date = input('Due date(DD-MM-YYYY): ')
+                    day, month, year = date.split('-')
+                    date = datetime.date(int(year), int(month), int(day))
                     correct_date = True
                 except Exception as e:
                     print(f'{e}! PLease try again!')
-            print('')
 
             #input priority
             urg = int(input('How urgent is this task(1-10): '))
@@ -105,8 +103,8 @@ def menu(to_do_list):
             print('''
             search by:
             1 - Message
-            3 - keyword
-            2 - date
+            2 - keyword
+            3 - date
             ''')
             sval = int(input('\n> '))
             while sval not in [1,2,3]:
@@ -124,23 +122,24 @@ def menu(to_do_list):
                 #input date
                 correct_date = False
                 while not correct_date:
-                    try:
-                        date   = input('Due date(DD-MM-YYYY): ')
-                        day, month,year = date.split('-')
-                        date = datetime.date(year, month, day)
-                        correct_date = True
-                    except Exception as e:
-                        print(f'{e}! PLease try again!')
+                    #try:
+                    print('Due date(DD-MM-YYYY): ',end=' ')
+                    date = input()
+                    day, month, year = date.split('-')
+                    date = datetime.date(int(year), int(month), int(day))
+                    correct_date = True
+                    #except Exception as e:
                 print('')
 
                 plist = to_do_list.search(key='date',value=date)
 
-            print('\n---> Search Results:\n')
+            print('\n\t[\n  Search Results:\n')
             to_do_list.show(full_list=False,partial_list=plist)
-
+            print('\n\t]\n')
         if val == 3:
-            print('\n---> Your to-do list:\n')
+            print('\n\t[\n Your to-do list:\n')
             to_do_list.show()
+            print('\n\t]\n')
 
         if val == 4:
             to_do_list.emptyList()
@@ -154,6 +153,7 @@ def menu(to_do_list):
         if val == 7:
             break
 
+        print('')
         print('''
         ------- TO DO LIST -------
         1 - Add a task
