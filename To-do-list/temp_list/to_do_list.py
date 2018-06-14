@@ -6,15 +6,19 @@ from gi.repository import Gio
 
 class tasks:
     tasks = []
-    def add(self,message,date,urg_imp):
+    def add(self,message,date,urg,imp):
         task = {}
         task["message"] = message
         task["date"] = date
+        task["urg"] = urg
+        task["imp"] = imp
+        urg_imp = round(urg/imp,2)
         task["urg/imp"] = urg_imp
         task["done"] = False
         self.tasks.append(task)
 
     def show(self,full_list=True,partial_list=None):
+        self.sort()
         if full_list:
             t = self.tasks
         else:
@@ -28,8 +32,8 @@ class tasks:
         self.tasks = []
 
     def sort(self,key="urg/imp"):
-        k = lambda x: x[key]
-        self.tasks = sorted(self.tasks,key = k)
+        k = lambda x: (x['urg'],x['imp'])
+        self.tasks.sort(key = k,reverse=True)
 
     def search(self,key,value):
         t = []
@@ -98,11 +102,9 @@ class tasks:
 
         #positions of all messages
         #leave one extra empty space (if last message is very long)
-        pos = [i*height/num for i in range(num+2)]
+        pos = [i*height/(num+1) for i in range(num+1)]
         last = pos[-1]
-        #del pos[-1]
         pos = [p + (height-last)/2 for p in pos]
-        #print(pos1)
 
         # make a blank image for the text, initialized to transparent text color
         txt = Image.new('RGBA', wallpaper.size, (255,255,255,0))
@@ -136,6 +138,9 @@ class tasks:
                         if midx + txt_margin + fnt.getsize(' '.join(lst[:lst.index(l)]))[0] > wallpaper.size[0] - margin:
                             end = lst.index(l)-1
                             break
+                    #cut text if it is 'done'
+                    if tasks[i]["done"] is True:
+                        draw.line((midx+txt_margin,pos[i]+c*count+fnt.getsize(tasks[i]["message"])[1]/2,midx+txt_margin+fnt.getsize(' '.join(lst[:lst.index(l)-1]))[0],pos[i]+c*count+fnt.getsize(tasks[i]["message"])[1]/2),width=6,fill="white")
                     #write the chosen text
                     draw.text((midx+txt_margin,pos[i]+c*count), ' '.join(lst[:end]), font=fnt, fill=(255,255,255,255))
                     #delete text that has been written and continue
@@ -143,6 +148,9 @@ class tasks:
                     count+=1
             #only one line for this task
             else:
+                #cut text if it is 'done'
+                if tasks[i]["done"] is True:
+                    draw.line((midx+txt_margin,pos[i]+fnt.getsize(tasks[i]["message"])[1]/2,midx+txt_margin+fnt.getsize(tasks[i]["message"])[0],pos[i]+fnt.getsize(tasks[i]["message"])[1]/2),width=6,fill="white")
                 draw.text((midx+txt_margin,pos[i]), tasks[i]["message"], font=fnt, fill=(255,255,255,255))
 
         out = Image.alpha_composite(wallpaper, txt)

@@ -3,19 +3,22 @@ import datetime
 
 #menu for user
 def menu(to_do_list):
-    print('''
-    ------- TO DO LIST -------
-    1 - Add a task
-    2 - search for a task
-    3 - Show all tasks
-    4 - empty list
-    5 - save list to file
-    6 - load list from file
-    7 - update wallpaper
-    8 - exit
-    ''')
-    val = int(input('\n>>> '))
+    val = 0
     while val != 8:
+
+        print('''
+        ------- TO DO LIST -------
+        1 - Add a task
+        2 - search for a task
+        3 - Show all tasks
+        4 - empty list
+        5 - save list to file
+        6 - load list from file
+        7 - update wallpaper
+        8 - exit
+        ''')
+        val = int(input('\n>>> '))
+
         if val not in range(1,7+1):
             val = input('Incorrect Choice! Enter again: ')
 
@@ -44,11 +47,12 @@ def menu(to_do_list):
             imp = int(input('How important is this task(1-10): '))
             while imp not in range(1,10+1):
                 print('Out of bounds! Try Again')
+
                 imp = int(input('How important is this task(1-10): '))
-            urg_imp = round(urg/imp,2)
+
             print(' ')
             #add task to to do list
-            to_do_list.add(message,date,urg_imp)
+            to_do_list.add(message,date,urg,imp)
 
         if val == 2:
             print('''
@@ -109,19 +113,6 @@ def menu(to_do_list):
         if val == 8:
             break
         print('')
-        print('''
-        ------- TO DO LIST -------
-        1 - Add a task
-        2 - search for a task
-        3 - Show all tasks
-        4 - empty list
-        5 - save list to file
-        6 - load list from file
-        7 - update wallpaper
-        8 - exit
-        ''')
-        val = int(input('\n>>> '))
-
 
 ### --- MAIN --- ###
 to_do_list = tasks()
