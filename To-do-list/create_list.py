@@ -13,13 +13,14 @@ def Menu(AddedList, numList):
 	6. Sort list by priority
 	7. Reset list
 	8. Show all tasks
-	9. Exit
+	9. Set reminder
+	10. Exit
 	''')
 
 	finalList = AddedList
 	count = numList
 
-	userInput = int(input('Enter the action you want to perform [1-9]:\t'))
+	userInput = int(input('Enter the action you want to perform [1-10]:\t'))
 
 	# User Input Allocation
 
@@ -123,8 +124,29 @@ def Menu(AddedList, numList):
 				#i = i+1
 
 		Menu(finalList, count)
-
+		
 	if userInput == 9:
+
+		print('\n --- Set Reminder ---- \n')
+		print('\n --- Choose the audio to be played ---\n')
+		print('''
+			1. Audio1
+			2. Audio2
+			3. Audio3
+		      ''')
+		default = "/root/Desktop/to-do-list/audio folder/audio1.mp3"
+
+		audioInput = int(input('Enter the action you want to perform [1-3]:\t'))
+		if audioInput == 1:
+			pass
+		if audioInput == 2:
+			default = "/root/Desktop/to-do-list/audio folder/audio2.mp3"
+		if audioInput == 3:
+			default = "/root/Desktop/to-do-list/audio folder/audio1.mp3"
+		print('\n --- Reminder has been set ---\n')
+		Menu(finalList, len(finalList))
+
+	if userInput == 10:
 		print('\nExiting To-Do List\n')
 		sys.exit()
 
