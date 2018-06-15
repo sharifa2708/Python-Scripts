@@ -1,5 +1,6 @@
 import random
 import os
+import datetime
 import pprint
 from PIL import Image,ImageDraw,ImageFont
 from gi.repository import Gio
@@ -95,6 +96,7 @@ def set_up_2(tasks,wallpaper):
     height = wallpaper.size[1]
     margin = 50
     txt_margin = 20
+    date_margin = 300
 
     #positions of all messages
     #leave one extra empty space (if last message is very long)
@@ -116,7 +118,7 @@ def set_up_2(tasks,wallpaper):
 
     #write headers - urgent / important
     draw.text(( wallpaper.size[0] - 5*f1_size, margin), "Urgent", font=fnt1, fill=(255,0,0,255))
-    draw.text(( wallpaper.size[0] - 6*f1_size, wallpaper.size[1] - margin - f1_size), "Important", font=fnt1, fill=(255,255,0,255))
+    draw.text(( wallpaper.size[0] - 7*f1_size, wallpaper.size[1] - margin - f1_size), "Not Urgent", font=fnt1, fill=(255,255,0,255))
 
     #write tasks
     for i in range(len(tasks)):
@@ -131,22 +133,25 @@ def set_up_2(tasks,wallpaper):
             while lst != []:
                 end = len(lst)
                 for l in lst:
-                    if midx + txt_margin + fnt.getsize(' '.join(lst[:lst.index(l)]))[0] > wallpaper.size[0] - margin:
+                    if midx + date_margin + txt_margin + fnt.getsize(' '.join(lst[:lst.index(l)]))[0] > wallpaper.size[0] - margin:
                         end = lst.index(l)-1
                         break
-                #cut text if it is 'done'        
+                #cut text if it is 'done'
                 if tasks[i]["done"] is True:
-                    draw.line((midx+txt_margin,pos[i]+c*count+fnt.getsize(tasks[i]["message"])[1]/2,midx+txt_margin+fnt.getsize(' '.join(lst[:lst.index(l)-1]))[0],pos[i]+c*count+fnt.getsize(tasks[i]["message"])[1]/2),width=6,fill="white")
+                    draw.line((midx+date_margin+txt_margin,pos[i]+c*count+fnt.getsize(tasks[i]["message"])[1]/2,midx+date_margin+txt_margin+fnt.getsize(' '.join(lst[:lst.index(l)-1]))[0],pos[i]+c*count+fnt.getsize(tasks[i]["message"])[1]/2),width=6,fill="white")
                 #write the chosen text
-                draw.text((midx+txt_margin,pos[i]+c*count), ' '.join(lst[:end]), font=fnt, fill=(255,255,255,255))
+                draw.text((midx+date_margin+txt_margin,pos[i]+c*count), ' '.join(lst[:end]), font=fnt, fill=(255,255,255,255))
                 #delete text that has been written and continue
                 del lst[:end]
                 count+=1
+                draw.text((midx+txt_margin,pos[i]), tasks[i]["date"], font=fnt, fill=(255,255,255,255))
+
         #only one line for this task
         else:
             if tasks[i]["done"] is True:
-                draw.line((midx+txt_margin,pos[i]+fnt.getsize(tasks[i]["message"])[1]/2,midx+txt_margin+fnt.getsize(tasks[i]["message"])[0],pos[i]+fnt.getsize(tasks[i]["message"])[1]/2),width=6,fill="white")
-            draw.text((midx+txt_margin,pos[i]), tasks[i]["message"], font=fnt, fill=(255,255,255,255))
+                draw.line((midx+date_margin+txt_margin,pos[i]+fnt.getsize(tasks[i]["message"])[1]/2,midx+date_margin+txt_margin+fnt.getsize(tasks[i]["message"])[0],pos[i]+fnt.getsize(tasks[i]["message"])[1]/2),width=6,fill="white")
+            draw.text((midx+date_margin+txt_margin,pos[i]), tasks[i]["message"], font=fnt, fill=(255,255,255,255))
+            draw.text((midx+txt_margin,pos[i]), tasks[i]["date"], font=fnt, fill=(255,255,255,255))
 
     out = Image.alpha_composite(wallpaper, txt)
     return out
@@ -161,6 +166,11 @@ def make_img_from_list(tasks):
 
     return new_wallpaper
 
+def get_date():
+    year = random.choice(range(1950, 2001))
+    month = random.choice(range(1, 13))
+    day = random.choice(range(1, 28))
+    return datetime.date(year,month,day)
 
 if __name__ == '__main__':
     #sample tasks
@@ -170,9 +180,9 @@ if __name__ == '__main__':
         imp = random.randint(1,10)
         urg_imp = round(urg/imp,2)
         if i is 5:
-            tasks.append({ 'message':f'sample {i+1} compulsory long message to check comaptibility with other piece of code', 'urg':urg, 'imp':imp, 'urg_imp':urg_imp, 'done':random.choice([True,False])  })
+            tasks.append({ 'message':f'sample {i+1} compulsory long message to check comaptibility with other piece of code', 'urg':urg, 'imp':imp, 'urg_imp':urg_imp, 'done':False, 'date':str(get_date())  })
         else:
-            tasks.append({ 'message':f'sample {i+1}', 'urg':urg, 'imp':imp, 'urg_imp':urg_imp, 'done':True  })
+            tasks.append({ 'message':f'sample {i+1}', 'urg':urg, 'imp':imp, 'urg_imp':urg_imp, 'done':random.choice([True,False]), 'date':str(get_date())  })
     pprint.pprint(tasks)
 
 update_wallpaper(tasks)

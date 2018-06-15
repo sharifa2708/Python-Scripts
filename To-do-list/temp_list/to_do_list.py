@@ -3,9 +3,12 @@ import os
 import datetime
 from PIL import Image,ImageDraw,ImageFont
 from gi.repository import Gio
+#from playsound import playsound
+from pygame import mixer
 
 class tasks:
     tasks = []
+    default_audio = './consequence.mp3'
     def add(self,message,date,urg,imp):
         task = {}
         task["message"] = message
@@ -17,22 +20,32 @@ class tasks:
         task["done"] = False
         self.tasks.append(task)
 
-    def show(self,full_list=True,partial_list=None):
-        self.sort()
+    def show(self,full_list=True,partial_list=None,num=False):
         if full_list:
             t = self.tasks
         else:
             t = partial_list
-        for task in t:
-            for key,value in task.items():
-                print(f'{key}: {value}')
-            print(' ')
+
+        if num:
+            count = 1
+            for task in t:
+                print(f'{count} - {task["message"]} - {task["date"]} - urg: {task["urg"]} - imp: {task["imp"]}')
+                count+=1
+                print(' ')
+        else:
+            for task in t:
+                print(f'{task["message"]} - {task["date"]} - urg: {task["urg"]} - imp: {task["imp"]}')
+                print(' ')
+        return len(t)
 
     def empty(self):
         self.tasks = []
 
-    def sort(self,key="urg/imp"):
-        k = lambda x: (x['urg'],x['imp'])
+    def sort(self,user_key=None):
+        if not user_key:
+            k = lambda x: (x['urg'],x['imp'])
+        else:
+            k = lambda x: x[user_key]
         self.tasks.sort(key = k,reverse=True)
 
     def search(self,key,value):
@@ -51,19 +64,23 @@ class tasks:
 
     def save(self,out_file='to-do-list-data.json'):
         print(f'saving to {out_file}')
-        data = {"to-do-list":self.tasks}
+        data = {"to-do-list":self.tasks,"audio":self.default_audio}
         with open(out_file,'w') as f:
             json.dump(data,f,indent = 4,default=str)
 
     def load(self,in_file ='to-do-list-data.json'):
         print(f'loading from {in_file}')
+
+        self.upcoming_reminders()
+        self.current_reminders()
+
         with open(in_file) as f:
             self.tasks = json.load(f)["to-do-list"]
+            self.default_audio = json.load(f)["audio"]
             for task in self.tasks:
                 date = task["date"]
                 year,month,day = date.split('-')
                 task["date"] = datetime.date(int(year),int(month),int(day))
-
     #returns the path to the current wallpaper
     #utility for update_wallpaper
     def get_wallpaper(self):
@@ -109,9 +126,9 @@ class tasks:
         # make a blank image for the text, initialized to transparent text color
         txt = Image.new('RGBA', wallpaper.size, (255,255,255,0))
         # get a font
-        fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+        fnt = ImageFont.truetype('Pillow/Tests/fonts/DejaVuSans.ttf', 50)
         f1_size = 75
-        fnt1 = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', f1_size)
+        fnt1 = ImageFont.truetype('Pillow/Tests/fonts/DejaVuSans.ttf', f1_size)
         # get a drawing context
         draw = ImageDraw.Draw(txt)
 
@@ -166,3 +183,59 @@ class tasks:
         new_wallpaper = self.set_up(wallpaper)
 
         return new_wallpaper
+
+    #reminders for tomorrow
+    def upcoming_reminders(self):
+        tom_tasks = [ task for task in self.tasks if task["date"] == datetime.date.today() + datetime.timedelta(days=1)  ]
+        if not tom_tasks:
+            os.system('notify-send "No tasks for tomorrow!" ')
+        else:
+            for task in tom_tasks:
+                os.system(f'notify-send "Upcoming: {task["message"]}" ')
+
+    #utility for current reminders
+    def ask_user(self,today_tasks):
+        for task in today_tasks:
+            ans = input(f'have you completed {task["message"]} (y/n)?: ').lower()
+            ind = self.tasks.index(task)
+            if ans == 'y':
+                self.tasks[ind]["done"] = True
+            if ans == 'n':
+                val = input(f'would you like to:\n1: delete task\n2: change due date\n')
+                if val is '1':
+                    del self.tasks[ind]
+                if val is '2':
+                    date = input('Due Date(dd-mm-yyyy): ')
+                    day,month,year = date.split('-')
+                    date = datetime.date(int(year),int(month),int(day))
+                    self.tasks[ind]["date"] = date
+
+    #reminders for today
+    def current_reminders(self):
+        today_tasks = [ task for task in self.tasks if task["date"] == datetime.date.today() ]
+        if not today_tasks:
+            os.system('notify-send "No tasks for Today!" ')
+        else:
+            for task in today_tasks:
+                os.system(f'notify-send "Due today: {task["message"]}" ')
+            mixer.init()
+            mixer.music.load(self.default_audio)
+            mixer.music.play()
+            self.ask_user(today_tasks)
+
+    def mark_as_done(self,val):
+        ind = int(val) - 1
+        print(f'marked "{self.tasks[ind]["message"]}" as Done')
+        self.tasks[ind]["done"] = True
+
+    #cahnge default audio to user supplied Audio
+    def reminder_audio(path):
+        if not os.path.isfile(path):
+            print('No such file exists')
+            return False
+        if os.path.splitext(path)[1].lower() not in ['.mp4','.wav']:
+            print('Incorrect Format! Only .mp3 and .wav files are supported')
+            return False
+        else:
+            self.default_audio = path
+            return True
